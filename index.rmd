@@ -1,0 +1,104 @@
+---
+title: "STAA-566: Data Vis"
+subtitle: "Assignment 2: Dynamic Figure"
+author: "Penny Grant"
+date: "`r Sys.Date()`"
+header-includes:
+  - \setmainfont{Noto Sans}
+  - \setmonofont{Noto Sans Mono}
+  - \usepackage{physics}
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load Packages
+
+```{r, message=FALSE}
+require(dplyr)
+require(tidyverse)
+require(ggplot2)
+require(plotly)
+require(viridis)
+require(ggthemes)
+```
+
+# Import Dataset
+
+> Dua, D. and Graff, C. (2019). UCI Machine Learning Repository [http://archive.ics.uci.edu/ml]. Irvine, CA: University of California, School of Information and Computer Science. Accessed at <http://archive.ics.uci.edu/ml/datasets/Wine+Quality>
+
+Data source: For this assignment, I used the "Wine Quality Data Set" available from UCI Machine Learning Repository. It provides two datasets, for red and white wines, of different attributes of the wine and their overall quality.
+
+First I imported both datasets
+
+```{r,message=FALSE}
+white_wine <- read_delim("Data/winequality-white.csv",delim=";")
+red_wine <- read_delim("Data/winequality-red.csv", delim=";")
+```
+
+I wanted to combine the datasets for easier comparison, so I added a column to both to hold the wine variant data
+
+```{R,message=FALSE}
+white_wine <- dplyr::mutate(white_wine,wine="white")
+red_wine <- dplyr::mutate(red_wine,wine="red")
+```
+
+Finally, I created a joint data frame, and removed all duplicate rows
+
+```{R,message=FALSE}
+all_wines <- full_join(red_wine,white_wine)
+all_wines <- dplyr::distinct(all_wines)
+```
+
+# Plot Data
+
+I wanted to show how alcohol content impacted the quality of the wine, and how it might differ between reds and whites.
+
+Start with mapping the data, using Wine Variant as a factor along the y-axis. Make Wine Quality a factor for the fill, so it can take on discrete color values for easier viewing.
+
+```{r}
+wine_hm <- ggplot(all_wines,
+       aes(x=alcohol,
+       y=factor(wine),
+       fill=factor(quality),
+       text=paste("Alchol Content(%):",alcohol,
+                  "<br>Quality:",quality)))+
+  geom_tile(width=.5,height=.5,aes(group=quality))
+```
+
+Next, adjust the colors and theme to be more intuitive
+
+```{r}
+wine_hm <- wine_hm +
+  theme_classic(base_size=14)+
+  scale_fill_brewer(palette = "Spectral")
+```
+
+Change axes, add descriptive labels and title
+
+```{r}
+wine_hm <- wine_hm +
+  # change x-scale
+  scale_x_continuous(breaks=seq(8,15,by=1))+
+  
+  # add labels to axes
+  labs(x="Alcohol Content",y="Wine Variant")+
+  
+  # change legend title
+  guides(fill=guide_legend(title="Wine Quality"),color="none")+
+  
+  # add & center title
+  ggtitle("Wine Quality by Alcohol Content")+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+Add interactive element with `ggplotly`
+
+```{r}
+ggplotly(wine_hm,tooltip = "text")
+```
+
+
+For interactivity, I added a custom tooltip to display both the alcohol content as a percentage, and the wine quality rating. Since some wine quality ratings are hidden in the graph, I also left in the legend. Legend entries themselves can be selected to show all data associated with the selected wine quality rating.
