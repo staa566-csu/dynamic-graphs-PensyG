@@ -101,4 +101,5 @@ ggplotly(wine_hm,tooltip = "text")
 ```
 
 
-For interactivity, I added a custom tooltip to display both the alcohol content as a percentage, and the wine quality rating. Since some wine quality ratings are hidden in the graph, I also left in the legend. Legend entries themselves can be selected to show all data associated with the selected wine quality rating.
+For interactivity, I added a custom tooltip to display both the alcohol content as a percentage, and the wine quality rating. Since some wine quality ratings are hidden in the graph, I also left in the legend. Legend entries themselves can be selected to show all data associated with the selected wine quality rating. Once any one trace is selected, others can be selected for additional comparison.
+
